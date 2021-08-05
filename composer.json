@@ -1,0 +1,36 @@
+{
+  "name": "xpressengine-plugin/integrated_keychain",
+  "description": "다른 플러그인들이 필요한 API키를 중복관리하지 않도록 도와줍니다.",
+  "keywords": [
+    "xpressengine",
+    "plugin"
+  ],
+  "license": "LGPL-3.0-or-later",
+  "version": "1.0.0",
+  "type": "xpressengine-plugin",
+  "support": {
+    "email": "xiso@amuz.co.kr"
+  },
+  "authors": [
+    {
+      "name": "xiso",
+      "email": "xiso@amuz.co.kr",
+      "homepage": "https://amuz.co.kr",
+      "role": "Developer"
+    }
+  ],
+  "extra": {
+    "xpressengine": {
+      "title": "통합 키체인",
+      "component": {}
+    }
+  },
+  "require": {
+    "xpressengine/xpressengine": "~3.0.13"
+  },
+  "autoload": {
+    "psr-4": {
+      "Amuz\\XePlugin\\IntegratedKeychain\\": "src/"
+    }
+  }
+}
