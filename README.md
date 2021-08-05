@@ -22,8 +22,8 @@ public function boot(){
     ...
     ...
 $keychain = [
-    //앱에서 요청할 고유 키 이름을 지정 
-    'kakao_map_key' => [
+    //앱에서 요청할 고유 키 이름을 지정. 가능한 플러그인 고유의 명칭을 사용하는것을 권장 
+    'myplugin_kakao_map_key' => [
         'tab' => '확장필드', // 설정화면에 분류될 섹션
         'group' => '지도', // 설정화면에 분류될 그룹
         'how' => '확장필드 위치 및 지도 필드에 활용됩니다.', // 이 플러그인에서 이 키를 왜 요구하는지 작성합니다.
@@ -56,11 +56,11 @@ $keychain = app('amuz.keychain');
 - 저장된 키를 활용 할 때에는 다음과같이 호출할 수 있습니다.
 ```php
 //키에 저장된 값을 즉시 반환
-$value = app('amuz.keychain')->getValueById('kakao_map_key');
+$value = app('amuz.keychain')->getValueById('myplugin_kakao_map_key');
 ```
 ```php
 //키의 UniqueKey Array를 반환
-$uniqueKey = app('amuz.keychain')->getKeyByID('kakao_map_key');
+$uniqueKey = app('amuz.keychain')->getKeyByID('myplugin_kakao_map_key');
 ```
 ```php
 //반환된 UniqueKey Array
