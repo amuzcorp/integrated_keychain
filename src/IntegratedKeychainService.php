@@ -45,16 +45,29 @@ class IntegratedKeychainService
     }
 
     public function getKeyChains(){
-        if($this->key_chains == null) $this->setUniqueKeys();
+        if($this->unique_keys == null) $this->setUniqueKeys();
+
+        //등록된 유니크 키를 탭/그룹단위로 정리
+        foreach($this->unique_keys as $unique_key){
+            $group = $unique_key['group'];
+            array_set($this->key_chains, $group, $unique_key);
+        }
+
         return $this->key_chains;
     }
 
     public function setUniqueKeys(){
         $registered_keychains = \XeRegister::get('integrated_keychain') ?: [];
         if(count($registered_keychains) < 1) return null;
+//
+//        usort($registered_keychains, function ($a, $b) {
+//            if ($a['ordering'] == $b['ordering']) {
+//                return 0;
+//            }
+//            return ($a['ordering'] < $b['ordering']) ? -1 : 1;
+//        });
 
         $pluginHandler = app('xe.plugin');
-        $key_chains = [];
         $unique_keys = [];
 
         foreach($registered_keychains as $pluginId => $keychain){
@@ -73,44 +86,37 @@ class IntegratedKeychainService
 
                 //다른 플러그인에서 먼저 등록한 적이 있는지 확인
                 $exist_key = array_get($unique_keys,$key_id);
-                //이미 등록되어있다면, 각 플러그인에서 지시한 ordering에 따라 우선순위 부여 (DESC방식)
-                //이 우선순위는 탭,그룹의 구분일 뿐 값은 똑같이 가져올 수 있도록 설계한다.
+
                 if($exist_key != null){
-                    if(array_get($exist_key,'ordering',1) >= array_get($key,'ordering',1)){
-                        if(!isset($exist_key['requester'])) $exist_key['requester'] = [];
-                        $exist_key['requester'][$requestId] = $requester;
-                        $unique_keys[$key_id] = $exist_key;
-                        continue;
-                    }
-                }
-
-                //유니크 키로 등록
-                $unique_key = [
-                    '_type' => array_get($key,'type','formText'),
-                    '_args' => [
-                        'name'=> $key_id,
-                        'label'=>array_get($key,'label','제목 없음'),
-                        'description'=>array_get($key,'description'),
-                        'placeholder' => array_get($key,'placeholder'),
+                    //이미 등록된 플러그인이면 requester 만 추가
+                    if(!isset($exist_key['requester'])) $exist_key['requester'] = [];
+                    $exist_key['requester'][$requestId] = $requester;
+                    $unique_keys[$key_id] = $exist_key;
+                }else{
+                    //유니크 키로 등록
+                    $unique_key = [
+                        'group' => sprintf('%s.%s.%s', array_get($key, 'tab', '기본'), array_get($key, 'group', '기본'), $key_id),
+                        '_type' => array_get($key,'type','formText'),
+                        '_args' => [
+                            'name'=> $key_id,
+                            'label'=>array_get($key,'label','제목 없음'),
+                            'description'=>array_get($key,'description'),
+                            'placeholder' => array_get($key,'placeholder'),
+                            'value' => $this->keychainConfig->get('keychain.' . $key_id) ?: array_get($key,'default'),
+                            'options' => array_get($key,'options'),
+                        ],
                         'value' => $this->keychainConfig->get('keychain.' . $key_id) ?: array_get($key,'default'),
-                        'options' => array_get($key,'options'),
-                    ],
-                    'value' => $this->keychainConfig->get('keychain.' . $key_id) ?: array_get($key,'default'),
-                    'id' => $key_id,
-                    'vid' => array_get($key,'vid','vendor'),
-                    'pid' => array_get($key,'pid','product'),
-                    'requester' => [
-                        $requestId => $requester
-                    ],
-                ];
-                $unique_keys[$key_id] = $unique_key;
-
-                //등록된 유니크 키를 탭/그룹단위로 정리
-                $group = sprintf('%s.%s.%s',array_get($key,'tab','기본'),array_get($key,'group','기본'),$key_id);
-                array_set($key_chains,$group,$unique_key);
+                        'id' => $key_id,
+                        'vid' => array_get($key,'vid','vendor'),
+                        'pid' => array_get($key,'pid','product'),
+                        'requester' => [
+                            $requestId => $requester
+                        ],
+                    ];
+                    $unique_keys[$key_id] = $unique_key;
+                }
             }
         }
         $this->unique_keys = $unique_keys;
-        $this->key_chains = $key_chains;
     }
 }
