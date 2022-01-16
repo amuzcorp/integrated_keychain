@@ -24,8 +24,8 @@ class IntegratedKeychainService
         return $this->keychainConfig;
     }
 
-    public function getValueById($key_id){
-        return array_get($this->getKeyById($key_id),'value');
+    public function getValueById($key_id, $default = null){
+        return array_get($this->getKeyById($key_id),'value',$default);
     }
 
     public function getKeyByID($key_id){
